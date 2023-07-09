@@ -38,3 +38,6 @@ src/cloud-api-adaptor/*.qcow2
 .git-commit
 .git-commit.tmp
 *.tar.gz
+
+# Secrets
+src/cloud-api-adaptor/install/overlays/gcp/GCP_CREDENTIALS
