@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/confidential-containers/cloud-api-adaptor/pkg/util/agentproto"
 	cri "github.com/containerd/containerd/pkg/cri/annotations"
 	crio "github.com/containers/podman/v4/pkg/annotations"
@@ -143,47 +142,7 @@ func (s *proxyService) CreateContainer(ctx context.Context, req *pb.CreateContai
 	if pullImageInGuest {
 		logger.Printf("CreateContainer: Ignoring PullImage before CreateContainer (cid: %q)", req.ContainerId)
 	} else {
-		imageName, err := s.getImageName(req.OCI.Annotations)
-		if err != nil {
-			logger.Printf("CreateContainer: image name is not available in CreateContainerRequest: %v", err)
-		} else {
-			// Get the imageName from digest
-			if strings.HasPrefix(imageName, "sha256:") {
-				digest := imageName
-				logger.Printf("CreateContainer: get imageName from digest %q", digest)
-				imageName, err = s.getImageFromDigest(ctx, digest)
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			logger.Printf("CreateContainer: calling PullImage for %q before CreateContainer (cid: %q)", imageName, req.ContainerId)
-
-			pullImageReq := &pb.PullImageRequest{
-				Image:       imageName,
-				ContainerId: req.ContainerId,
-			}
-
-			err = retry.Do(
-				func() error {
-					pullImageRes, pullImageErr := s.Redirector.PullImage(ctx, pullImageReq)
-					if pullImageErr != nil {
-						logger.Printf("CreateContainer: failed to call PullImage, probably because the image has already been pulled. ignored: %v", pullImageErr)
-						return pullImageErr
-					}
-					logger.Printf("CreateContainer: successfully pulled image %q", pullImageRes.ImageRef)
-					return nil
-				},
-			)
-
-			if err != nil {
-				logger.Printf("PullImage fails: %v", err)
-				return nil, err
-			}
-			// kata-agent uses this annotation to fix the image bundle path
-			// https://github.com/kata-containers/kata-containers/blob/8ad86e2ec9d26d2ef07f3bf794352a3fda7597e5/src/agent/src/rpc.rs#L694-L696
-			req.OCI.Annotations[cri.ImageName] = imageName
-		}
+		logger.Printf("Pulling image separately not support on main")
 	}
 
 	res, err := s.Redirector.CreateContainer(ctx, req)
@@ -273,19 +232,6 @@ func (s *proxyService) DestroySandbox(ctx context.Context, req *pb.DestroySandbo
 
 	if err != nil {
 		logger.Printf("DestroySandbox fails: %v", err)
-	}
-
-	return res, err
-}
-
-func (s *proxyService) PullImage(ctx context.Context, req *pb.PullImageRequest) (*pb.PullImageResponse, error) {
-
-	logger.Printf("PullImage: image:%s containerID:%s", req.Image, req.ContainerId)
-
-	res, err := s.Redirector.PullImage(ctx, req)
-
-	if err != nil {
-		logger.Printf("PullImage fails: %v", err)
 	}
 
 	return res, err
