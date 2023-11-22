@@ -128,8 +128,6 @@ func watchImagePullTime(ctx context.Context, client klient.Client, caaPod v1.Pod
 // Check cloud-api-adaptor daemonset pod logs to ensure that something like:
 // <date time> [adaptor/proxy]         mount_point:/run/kata-containers/<id>/rootfs source:<image> fstype:overlay driver:image_guest_pull
 // <date time> 11:47:42 [adaptor/proxy] CreateContainer: Ignoring PullImage before CreateContainer (cid: "<cid>")
-// not
-// <date time> 15:18:43 [adaptor/proxy] CreateContainer: calling PullImage for <image> before CreateContainer (cid: "<cid>")
 // was output
 func IsPulledWithNydusSnapshotter(ctx context.Context, t *testing.T, client klient.Client, nodeName string, containerId string) (bool, error) {
 	var podlist v1.PodList
@@ -159,12 +157,9 @@ func IsPulledWithNydusSnapshotter(ctx context.Context, t *testing.T, client klie
 				if nydusSnapshotterPullRegex.MatchString(line) {
 					t.Log("Pulled with nydus-snapshotter driver:" + line)
 					return true, nil
-				} else if legacyPullRegex.MatchString(line) {
-					t.Log("Called PullImage explicitly, not using nydus-snapshotter :" + line)
-					return false, nil
 				}
 			}
-			return false, fmt.Errorf("Didn't find pull image for snapshotter, or directly")
+			return false, fmt.Errorf("Didn't find pull image for snapshotter")
 		}
 	}
 	return false, fmt.Errorf("No cloud-api-adaptor pod found in podList: %v", podlist.Items)
