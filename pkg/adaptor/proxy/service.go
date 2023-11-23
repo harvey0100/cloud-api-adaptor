@@ -15,8 +15,8 @@ import (
 	"github.com/confidential-containers/cloud-api-adaptor/pkg/util/agentproto"
 	cri "github.com/containerd/containerd/pkg/cri/annotations"
 	crio "github.com/containers/podman/v4/pkg/annotations"
-	"github.com/gogo/protobuf/types"
 	pb "github.com/kata-containers/kata-containers/src/runtime/virtcontainers/pkg/agent/protocols/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 	criapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 )
 
@@ -99,7 +99,7 @@ func (s *proxyService) getImageName(annotations map[string]string) (string, erro
 
 // AgentServiceService methods
 
-func (s *proxyService) CreateContainer(ctx context.Context, req *pb.CreateContainerRequest) (*types.Empty, error) {
+func (s *proxyService) CreateContainer(ctx context.Context, req *pb.CreateContainerRequest) (*emptypb.Empty, error) {
 	var pullImageInGuest bool
 	logger.Printf("CreateContainer: containerID:%s", req.ContainerId)
 	if len(req.OCI.Mounts) > 0 {
@@ -165,7 +165,7 @@ func isNodePublishVolumeTargetPath(volumePath, directVolumesDir string) bool {
 	return err == nil
 }
 
-func (s *proxyService) StartContainer(ctx context.Context, req *pb.StartContainerRequest) (*types.Empty, error) {
+func (s *proxyService) StartContainer(ctx context.Context, req *pb.StartContainerRequest) (*emptypb.Empty, error) {
 
 	logger.Printf("StartContainer: containerID:%s", req.ContainerId)
 
@@ -178,7 +178,7 @@ func (s *proxyService) StartContainer(ctx context.Context, req *pb.StartContaine
 	return res, err
 }
 
-func (s *proxyService) RemoveContainer(ctx context.Context, req *pb.RemoveContainerRequest) (*types.Empty, error) {
+func (s *proxyService) RemoveContainer(ctx context.Context, req *pb.RemoveContainerRequest) (*emptypb.Empty, error) {
 
 	logger.Printf("RemoveContainer: containerID:%s", req.ContainerId)
 
@@ -191,7 +191,7 @@ func (s *proxyService) RemoveContainer(ctx context.Context, req *pb.RemoveContai
 	return res, err
 }
 
-func (s *proxyService) CreateSandbox(ctx context.Context, req *pb.CreateSandboxRequest) (*types.Empty, error) {
+func (s *proxyService) CreateSandbox(ctx context.Context, req *pb.CreateSandboxRequest) (*emptypb.Empty, error) {
 
 	logger.Printf("CreateSandbox: hostname:%s sandboxId:%s", req.Hostname, req.SandboxId)
 
@@ -211,7 +211,7 @@ func (s *proxyService) CreateSandbox(ctx context.Context, req *pb.CreateSandboxR
 	return res, err
 }
 
-func (s *proxyService) DestroySandbox(ctx context.Context, req *pb.DestroySandboxRequest) (*types.Empty, error) {
+func (s *proxyService) DestroySandbox(ctx context.Context, req *pb.DestroySandboxRequest) (*emptypb.Empty, error) {
 
 	logger.Printf("DestroySandbox")
 
