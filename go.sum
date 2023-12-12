@@ -1244,8 +1244,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/karrick/godirwalk v1.15.3/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
-github.com/kata-containers/kata-containers/src/runtime v0.0.0-20231121080517-6a6c3c53b5af h1:D4cRDrSF/goJ0eqApRW5FffiP3F2OfKbji8NizQJ9iw=
-github.com/kata-containers/kata-containers/src/runtime v0.0.0-20231121080517-6a6c3c53b5af/go.mod h1:eKVh2ScPyeprBK6BdE75P6EsyWNazV/g3GXge+QZUIE=
+github.com/kata-containers/kata-containers/src/runtime v0.0.0-20231211200958-ee74fca92cf0 h1:42gVpXAt1l/MCCooLSiOmjqBAN2pPm9wEVNvobVUA5E=
+github.com/kata-containers/kata-containers/src/runtime v0.0.0-20231211200958-ee74fca92cf0/go.mod h1:eKVh2ScPyeprBK6BdE75P6EsyWNazV/g3GXge+QZUIE=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
 github.com/kdomanski/iso9660 v0.3.5 h1:LO1n75zPjLeDQkz0Pyk1eZ7JGinjKjk2C174GSABVwY=
 github.com/kdomanski/iso9660 v0.3.5/go.mod h1:K+UlIGxKgtrdAWyoigPnFbeQLVs/Xudz4iztWFThBwo=
