@@ -151,7 +151,7 @@ func (p *gcpProvider) CreateInstance(ctx context.Context, podName, sandboxID str
 	return &cloud.Instance{
 		ID:   instance.GetName(),
 		Name: instance.GetName(),
-		IPs:  ips,
+		IPs:  nil, // TODO: ips,
 	}, nil
 }
 
