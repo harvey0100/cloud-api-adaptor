@@ -54,3 +54,4 @@ patchesStrategicMerge:
 ##TLS_SETTINGS
   #- tls_certs_volume_mount.yaml # set (for tls)
 ##TLS_SETTINGS
+  - add-gcp-credentials.yaml
