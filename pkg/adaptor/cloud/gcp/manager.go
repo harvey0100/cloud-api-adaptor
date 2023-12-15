@@ -13,6 +13,10 @@ var gcpcfg Config
 
 type Manager struct{}
 
+func init() {
+	cloud.AddCloud("gcp", &Manager{})
+}
+
 func (_ *Manager) ParseCmd(flags *flag.FlagSet) {
 
 	flags.StringVar(&gcpcfg.GcpCredentials, "gcp-credentials", "", "Google Application Credentials, defaults to `GCP_CREDENTIALS`")

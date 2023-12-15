@@ -173,6 +173,14 @@ func (p *gcpProvider) DeleteInstance(ctx context.Context, instanceID string) err
 	return nil
 }
 
+func (p *gcpProvider) ConfigVerifier() error {
+	ImageName := p.serviceConfig.ImageName
+	if len(ImageName) == 0 {
+		return fmt.Errorf("ImageName is empty")
+	}
+	return nil
+}
+
 func (p *gcpProvider) Teardown() error {
 	return nil
 }
