@@ -4,7 +4,7 @@
 
   If using AWS, create VPC and AMI. Similarly for other providers create the
   necessary resources.
-   
+
 * **Setup Kubernetes cluster in the cloud**
 
   At least one node in the cluster must have the "worker" role.
@@ -19,7 +19,7 @@
   ```
 
   If "worker" role is missing, execute the following command to set the role.
-   
+
     ```
     export NODENAME=<node-name>
     kubectl label node $NODENAME node.kubernetes.io/worker=
@@ -73,6 +73,7 @@ Alternatively the manual approach, if you want to pick a specific CoCo release/r
   ```
   kubectl get pods -n confidential-containers-system --watch
   ```
+  > **Note:** The `peerpodconfig-ctrl-caa-daemon` will be stuck in `CreateContainerConfigError` until the cloud provider overlay is applied
 
 - Wait until the `kata-remote` runtime class has been created by running:
   ```
@@ -96,7 +97,7 @@ Alternatively the manual approach, if you want to pick a specific CoCo release/r
     ```
   A successful install should show all the PODs with "Running" status under the `confidential-containers-system`
   namespace.
-  
+
     ```
     NAME                                              READY   STATUS    RESTARTS   AGE
     cc-operator-controller-manager-546574cf87-phbdv   2/2     Running   0          43m
