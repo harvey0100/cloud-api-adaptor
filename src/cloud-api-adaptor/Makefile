@@ -123,7 +123,7 @@ image-with-arch: .git-commit ## Build the per arch image
 deploy: ## Deploy cloud-api-adaptor using the operator, using the $CAA_IMAGE image according to install/overlays/$(CLOUD_PROVIDER)/kustomization.yaml file.
 ifneq ($(CLOUD_PROVIDER),)
 	kubectl apply -k "github.com/confidential-containers/operator/config/overlays/peerpods/default"
-	kubectl set env -n confidential-containers-system deployment/cc-operator-controller-manager RELATED_IMAGE_CAA=$(CAA_IMAGE)
+	kubectl set env -n confidential-containers-system deployment/cc-operator-controller-manager RELATED_IMAGE_CAA=${CAA_IMAGE}
 
 	kubectl rollout status deploy/cc-operator-controller-manager -n confidential-containers-system
 
