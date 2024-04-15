@@ -108,8 +108,8 @@ jobs:
       - name: Build the container image
         uses: docker/build-push-action@v4
         with:
-          context: ./hack
-          file: ./hack/Dockerfile.golang
+          context: hack
+          file: hack/Dockerfile.golang
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           tags: |
             ${{ steps.tags.outputs.fullImageName }}

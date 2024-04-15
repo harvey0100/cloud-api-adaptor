@@ -1,30 +1,32 @@
 #Directories
-install/runtime-payload/bin
-pause_bundle
-output
-staticlib
-pause
-umoci
-skopeo
-volumes/csi-wrapper/build
-volumes/csi-wrapper/vendor
+src/cloud-api-adaptor/install/runtime-payload/bin
+src/cloud-api-adaptor/pause_bundle
+src/cloud-api-adaptor/output
+src/cloud-api-adaptor/staticlib
+src/cloud-api-adaptor/pause
+src/cloud-api-adaptor/umoci
+src/cloud-api-adaptor/skopeo
+src/csi-wrapper/build
+src/csi-wrapper/vendor
+src/cloud-api-adaptor/opa/
 
 # Binaries
-agent-protocol-forwarder
-api-server-rest
-attestation-agent
-caa-provisioner-cli
-cloud-api-adaptor
-cluster-provisioner
-confidential-data-hub
-kata-agent
-process-user-data
+src/cloud-api-adaptor/agent-protocol-forwarder
+src/cloud-api-adaptor/api-server-rest
+src/cloud-api-adaptor/attestation-agent
+src/cloud-api-adaptor/caa-provisioner-cli
+src/cloud-api-adaptor/cloud-api-adaptor
+src/cloud-api-adaptor/cluster-provisioner
+src/cloud-api-adaptor/confidential-data-hub
+src/cloud-api-adaptor/kata-agent
+src/cloud-api-adaptor/process-user-data
+src/cloud-api-adaptor/opa
 
 # The code files under cmd are not ignored
-!/cmd/*
+!src/cloud-api-adaptor/cmd/*
 
 # Ignore the contents of the certificates directory
-podvm/files/etc/certificates/*
+src/cloud-api-adaptor/podvm/files/etc/certificates/*
 
 # IDEs
 .vscode
@@ -32,7 +34,7 @@ podvm/files/etc/certificates/*
 # Files
 vcenter.auto.pkrvars.hcl
 settings.auto.pkrvars.hcl
-*.qcow2
+src/cloud-api-adaptor/*.qcow2
 .git-commit
 .git-commit.tmp
 *.tar.gz

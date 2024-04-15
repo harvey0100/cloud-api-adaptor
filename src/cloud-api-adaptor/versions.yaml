@@ -1,0 +1,50 @@
+---
+# Sources for a base cloud os images
+cloudimg:
+  ubuntu:
+    focal:
+      amd64:
+        url: https://cloud-images.ubuntu.com/releases/focal/release-20230107/ubuntu-20.04-server-cloudimg-amd64.img
+        checksum: "sha256:3895e38566e5c2c019f5c6f825ab7570ee34dac6b9142fab0c7e5a78084c4280"
+      s390x:
+        url: https://cloud-images.ubuntu.com/releases/focal/release-20230107/ubuntu-20.04-server-cloudimg-s390x.img
+        checksum: "sha256:24673aa86785573d3a92e15166ff81beff88cbb0abc01938f156eb1332e87cd3"
+  rhel:
+    9: # dummy link, get trial image from: https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux/server/trial
+      amd64:
+        url: https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.2/x86_64/product-software
+        checksum: "sha256:34ff41b5274692c984e3860b21136af8b6ae502744c6c7578dda82002fba0287"
+      s390x:
+        url: https://access.redhat.com/downloads/content/433/ver=/rhel---9/9.3%20Beta/s390x/product-software
+        checksum: "sha256:d436ffeac7d468f75526ca8b8bab1cba64ba3ab2889ccd11fa107a7323b267db"
+
+tools:
+  bats: 1.10.0
+  golang: 1.21.9
+  rust: 1.72.0
+  protoc: 3.15.0
+  packer: v1.9.4
+# Referenced Git repositories
+git:
+  guest-components:
+    url: https://github.com/confidential-containers/guest-components
+    reference: 277617af60c32661819c1132ffbf3db8dc6e1b9f
+  kata-containers:
+    url: https://github.com/kata-containers/kata-containers
+    reference: d0df91935b8840036c2891b1f93dd8059ebe486a
+  umoci:
+    url: https://github.com/opencontainers/umoci
+    reference: v0.4.7
+  skopeo:
+    url: https://github.com/containers/skopeo
+    reference: v1.5.0
+  opa:
+    url: https://github.com/open-policy-agent/opa
+    reference: v0.58.0
+oci:
+  pause:
+    registry: docker://registry.k8s.io/pause
+    tag: 3.6
+  kbs:
+    registry: ghcr.io/confidential-containers/staged-images/kbs
+    tag: 84432a2a97da306399db5bc863c9324dbd8b95ac

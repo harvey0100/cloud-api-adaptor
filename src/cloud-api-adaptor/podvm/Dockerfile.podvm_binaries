@@ -1,0 +1,37 @@
+# Copyright Confidential Containers Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Builds pod vm image inside container
+#
+ARG BUILDER_IMG="quay.io/confidential-containers/podvm-builder-ubuntu"
+
+FROM ${BUILDER_IMG} AS podvm_builder
+
+ARG PODVM_DISTRO=ubuntu
+ARG AA_KBC=offline_fs_kbc
+# If not provided, uses system architecture
+ARG ARCH
+#This is the name of the policy file under 
+#files/etc/kata-opa
+ARG DEFAULT_AGENT_POLICY_FILE=allow-all.rego
+
+ENV PODVM_DISTRO ${PODVM_DISTRO}
+ENV AA_KBC ${AA_KBC}
+ENV ARCH ${ARCH}
+ENV DEFAULT_AGENT_POLICY_FILE ${DEFAULT_AGENT_POLICY_FILE}
+
+COPY . /src
+
+WORKDIR /src/cloud-api-adaptor/podvm
+# Installs add-ons for foreign target, if required
+RUN ./hack/cross-build-extras.sh
+
+RUN make binaries
+
+RUN tar czvf /podvm-binaries.tar.gz -C /src/cloud-api-adaptor/podvm/files usr/ etc/
+RUN tar czvf /pause-bundle.tar.gz -C /src/cloud-api-adaptor/podvm/files pause_bundle/
+
+FROM ubuntu:20.04
+COPY --from=podvm_builder /podvm-binaries.tar.gz /
+COPY --from=podvm_builder /pause-bundle.tar.gz /

@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_job:
-    name: build
+  caa:
+    name: cloud-api-adaptor
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -21,6 +21,9 @@ jobs:
           - release
         runner:
           - ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/cloud-api-adaptor
     steps:
       - name: Checkout the pull request code
         uses: actions/checkout@v3
@@ -62,3 +65,149 @@ jobs:
           name: tests_report_junit-${{ matrix.runner }}_${{ env.GO_VERSION }}
           path: ${{ github.workspace }}/tests_report_junit.xml
           retention-days: 1
+
+  controllers:
+    name: controllers
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        controller:
+          - peerpod-ctrl
+          - peerpodconfig-ctrl
+    defaults:
+      run:
+        working-directory: src/${{ matrix.controller }}
+    steps:
+      - name: Checkout the pull request code
+        uses: actions/checkout@v4
+
+      - name: Read properties from versions.yaml
+        run: |
+          go_version="$(yq '.tools.golang' ../cloud-api-adaptor/versions.yaml)"
+          [ -n "$go_version" ]
+          echo "GO_VERSION=${go_version}" >> "$GITHUB_ENV"
+
+      - name: Setup Golang version ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install build dependencies
+        if: matrix.controller == 'peerpod-ctrl'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libvirt-dev
+
+      - name: Verify go modules and manifests
+        run: make verify
+
+      - name: Build the controller manager
+        run: make build
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Build the controller image
+        run: make docker-build
+
+  volumes:
+    name: volume controllers
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        controller:
+          - csi-wrapper
+    defaults:
+      run:
+        working-directory: src/${{ matrix.controller }}
+    steps:
+      - name: Checkout the pull request code
+        uses: actions/checkout@v4
+
+      - name: Read properties from versions.yaml
+        run: |
+          go_version="$(yq '.tools.golang' ../cloud-api-adaptor/versions.yaml)"
+          [ -n "$go_version" ]
+          echo "GO_VERSION=${go_version}" >> "$GITHUB_ENV"
+
+      - name: Setup Golang version ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build the controllers
+        run: make build
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Build checks
+        run: make check
+
+      - name: Build docker images
+        run: |
+          echo "::group::Build csi-node-wrapper-docker"
+          make csi-node-wrapper-docker
+          echo "::endgroup::"
+
+          echo "::group::Build csi-controller-wrapper-docker"
+          make csi-controller-wrapper-docker
+          echo "::endgroup::"
+
+          echo "::group::Build csi-podvm-wrapper-docker"
+          make csi-podvm-wrapper-docker
+          echo "::endgroup::"
+
+  webhook:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/webhook
+    steps:
+      - name: Checkout the pull request code
+        uses: actions/checkout@v4
+
+      - name: Read properties from versions.yaml
+        run: |
+          go_version="$(yq '.tools.golang' ../cloud-api-adaptor/versions.yaml)"
+          [ -n "$go_version" ]
+          echo "GO_VERSION=${go_version}" >> "$GITHUB_ENV"
+
+      - name: Setup Golang version ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install kind
+        run: |
+          go install sigs.k8s.io/kind@v0.16.0
+
+      - name: Install bats
+        run: |
+          bats_version="$(yq '.tools.bats' ../cloud-api-adaptor/versions.yaml)"
+          [ -n "$bats_version" ]
+          git clone --branch "v${bats_version}" --single-branch \
+            https://github.com/bats-core/bats-core.git
+          cd bats-core
+          ./install.sh ~/.local
+
+      - name: Verify go modules and manifests
+        run: make verify
+
+      - name: Build the webhook
+        run: make build
+
+      - name: Run unit tests and static checks
+        run: make test
+
+      - name: Run end-to-end tests
+        run: |
+          make test-e2e
