@@ -39,11 +39,14 @@
 ### Using make deploy
 
 You can deploy the CoCo operator and cloud-api-adaptor with the `Makefile` by running
+* *Optional:* If you want to use a specific cloud-api-adaptor then set CAA_IMAGE e.g.
+    ```
+    export CAA_IMAGE="quay.io/confidential-containers/cloud-api-adaptor:latest
+    ```
 * set CLOUD_PROVIDER
     ```
     export CLOUD_PROVIDER=<aws|azure|ibmcloud|ibmcloud-powervs|libvirt|vsphere>
     ```
-    * `RESOURCE_CTRL` is set to `true` by default to allow the peerpod-ctrl to run, monitor and delete dangling cloud resources
 
 * `make deploy` deploys operator, runtime and cloud-api-adaptor pod in the configured cluster
     * validate kubectl is available in your `$PATH` and `$KUBECONFIG` is set
@@ -61,6 +64,11 @@ Alternatively the manual approach, if you want to pick a specific CoCo release/r
   kubectl apply -k "github.com/confidential-containers/operator/config/overlays/peerpods/default"
   ```
   > **Note:** there isn't currently a release with this support in, so the release version doesn't exist yet
+
+- If you want to use a specific cloud-api-adaptor image & tag then you can modify the peerpodconfig controller with:
+  ```
+  kubectl set env -n confidential-containers-system deployment/cc-operator-controller-manager RELATED_IMAGE_CAA=<caa_image>:<tag>
+  ```
 
 - Create the peer pods variant of the CC custom resource to install the required pieces of CC and create the `kata-remote` `RuntimeClass`
 <!--
