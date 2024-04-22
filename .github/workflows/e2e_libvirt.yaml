@@ -108,7 +108,6 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::cloud-api-adaptor logs"
-          kubectl logs -l app=cloud-api-adaptor -n confidential-containers-system
           kubectl logs ds/peerpodconfig-ctrl-caa-daemon -n confidential-containers-system
           echo "::endgroup::"
 
