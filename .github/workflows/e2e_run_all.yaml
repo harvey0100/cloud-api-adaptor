@@ -120,33 +120,17 @@ jobs:
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | \
             bash -s /usr/local/bin
 
-      - name: Update kustomization configuration
-        run: |
-          providers=(${{ env.PROVIDERS }})
-          # If there aren't providers then something is wrong
-          [[ ${#providers[@]} -gt 0 ]] || exit 1
-
-          for provider in ${providers[@]}; do
-            img="${E2E_IMG_REGISTRY}/cloud-api-adaptor"
-            tag="${E2E_IMG_RELEASE_TAG}"
-            [[ "$provider" = "libvirt" ]] && tag="${E2E_IMG_DEV_TAG}"
-            echo "::group::Update ${provider}"
-            pushd "install/overlays/${provider}"
-            kustomize edit set image "cloud-api-adaptor=${img}:${tag}"
-            # Print for debugging
-            cat kustomization.yaml
-            echo "::endgroup::"
-            # Validate the file to avoid it silently testing with a wrong image
-            grep "newName: ${img}" kustomization.yaml
-            grep "newTag: ${tag}" kustomization.yaml
-            popd
-          done
-
-      - uses: actions/upload-artifact@v3
+      - name: Upload install directory for next test runs
+        uses: actions/upload-artifact@v3
         with:
           name: install_directory
           path: src/cloud-api-adaptor/install/
           retention-days: 7
+
+      - name: Set up CAA image to test
+        run: |
+            echo "CAA_IMAGE=${E2E_IMG_REGISTRY}/cloud-api-adaptor:${E2E_IMG_RELEASE_TAG}" >> "$GITHUB_ENV"
+            echo "CAA_IMAGE_DEV=${E2E_IMG_REGISTRY}/cloud-api-adaptor:${E2E_IMG_DEV_TAG}" >> "$GITHUB_ENV"
 
   # Run libvirt e2e tests if pull request labeled 'test_e2e_libvirt'
   libvirt:
@@ -167,6 +151,7 @@ jobs:
           - amd64
     uses: ./.github/workflows/e2e_libvirt.yaml
     with:
+      caa_image: ${{ env.CAA_IMAGE_DEV }}
       podvm_image: ${{ inputs.registry }}/podvm-${{ matrix.provider }}-${{ matrix.os }}-${{ matrix.arch }}:${{ inputs.podvm_image_tag }}
       install_directory_artifact: install_directory
       git_ref: ${{ inputs.git_ref }}

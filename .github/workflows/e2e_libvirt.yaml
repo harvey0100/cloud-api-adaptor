@@ -10,6 +10,9 @@ on:
       podvm_image:
         required: true
         type: string
+      caa_image:
+        required: false
+        type: string
       install_directory_artifact:
         description: The archive name of the install directory
         default: ''
@@ -80,6 +83,7 @@ jobs:
         run: |
           ./libvirt/config_libvirt.sh
           # For debugging
+          echo "CAA_IMAGE=${{ inputs.caa_image }}" >> libvirt.properties
           cat libvirt.properties
 
       - name: run tests
