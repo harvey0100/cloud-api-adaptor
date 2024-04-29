@@ -127,6 +127,16 @@ Alternatively the manual approach, if you want to pick a specific CoCo release/r
     kubectl logs ds/peerpodconfig-ctrl-caa-daemon -n confidential-containers-system
     ```
 
+## Workaround: Clean up the images on the worker
+
+Due to an issue with containerd not caching images with snapshotter labels and peer-pods using the nydus-snapshotter to implement
+the image pull on guest. We first need to clean up images that have already been cached locally. This can be done by manually logging
+into the worker and running `ctr --namespace k8s.io image remove` and `ctr --namespace k8s.io content remove` commands for any images
+that have been pulled previously with overlayfs (or other non-nydus snapshotter), including the pause container image.
+
+Alternatively, you can try using the [convenience debug container](https://github.com/stevenhorsman/containerd-image-cleanup)
+which deletes some common images (and can be expanded).
+
 ## Building custom cloud-api-adaptor image
 
 * Set CLOUD_PROVIDER
