@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -23,7 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	"sigs.k8s.io/e2e-framework/klient"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
+	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -487,6 +490,7 @@ func (p *CloudAPIAdaptor) Deploy(ctx context.Context, cfg *envconf.Config, props
 	if err != nil {
 		return err
 	}
+
 	resources := client.Resources(p.namespace)
 
 	log.Info("Install the controller manager")
@@ -583,6 +587,72 @@ func (p *CloudAPIAdaptor) Deploy(ctx context.Context, cfg *envconf.Config, props
 		return err
 	}
 
+	// Temp workaround to clean up images
+	err = cleanUpContainerdImages(ctx, cfg, client)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// This is a temporary workaround due to an issue with containerd not caching images with snapshotter labels
+// and peer-pods using the nydus-snapshotter to implement the image pull on guest. We first need to clean up images
+// that have already been cached locally. This is done with the
+// [convenience debug container](https://github.com/stevenhorsman/containerd-image-cleanup)
+// which deletes some common images (and can be expanded)
+func cleanUpContainerdImages(ctx context.Context, cfg *envconf.Config, client klient.Client) error {
+	log.Info("Run the containerd-image-cleanup workaround...")
+	nodeList := &corev1.NodeList{}
+	if err := client.Resources().List(ctx, nodeList, resources.WithLabelSelector("katacontainers.io/kata-runtime=true")); err != nil {
+		return err
+	}
+
+	for _, node := range nodeList.Items {
+		log.Tracef("Running cleanup debug container on worker node: %s\n", node.Name)
+		// Run the debug pod on the node
+		cmd := exec.Command("kubectl", "debug", "node/"+node.Name, "--image=quay.io/stevenhorsman/containerd-image-cleanup:latest")
+		cmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG="+cfg.KubeconfigFile()))
+		stdoutStderr, err := cmd.CombinedOutput()
+		log.Tracef("%v, output: %s", cmd, stdoutStderr)
+		if err != nil {
+			return err
+		}
+		log.Trace("Created debug pod")
+
+		// Wait for pod/job to be completed
+		pods := &corev1.PodList{}
+		cleanup_pod := &corev1.Pod{}
+		_ = client.Resources().List(context.TODO(), pods)
+		for _, pod := range pods.Items {
+			if strings.HasPrefix(pod.ObjectMeta.Name, "node-debugger") {
+				cleanup_pod = &corev1.Pod{
+					ObjectMeta: metav1.ObjectMeta{Name: pod.ObjectMeta.Name, Namespace: pod.ObjectMeta.Namespace},
+				}
+				break
+			}
+		}
+
+		if err := wait.For(conditions.New(client.Resources()).PodPhaseMatch(cleanup_pod, corev1.PodSucceeded), wait.WithTimeout(time.Second*60)); err != nil {
+			return err
+		}
+		log.Tracef("Waited for cleanup pod to finish")
+
+		// Print the logs
+		log.Tracef("Log of the clean up pod %.v", cleanup_pod.Name)
+		podLogString, err := GetPodLog(ctx, client, *cleanup_pod)
+		if err != nil {
+			return err
+		}
+		log.Trace(podLogString)
+
+		// Clean up the pod/job
+		err = DeletePod(ctx, client, cleanup_pod, nil)
+		if err != nil {
+			return err
+		}
+		log.Trace("Deleted cleanup pod")
+	}
 	return nil
 }
 

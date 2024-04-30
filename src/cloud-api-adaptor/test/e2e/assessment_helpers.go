@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	pv "github.com/confidential-containers/cloud-api-adaptor/src/cloud-api-adaptor/test/provisioner"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	batchv1 "k8s.io/api/batch/v1"
@@ -182,24 +183,10 @@ func IsPulledWithNydusSnapshotter(ctx context.Context, t *testing.T, client klie
 	return false, fmt.Errorf("No cloud-api-adaptor pod found in podList: %v", podlist.Items)
 }
 
+// This code has moved to the provisioner package which e2e depends on, but I've kept this
+// indirection for now so we don't have to update lots of extra code in this PR
 func GetPodLog(ctx context.Context, client klient.Client, pod v1.Pod) (string, error) {
-	clientset, err := kubernetes.NewForConfig(client.RESTConfig())
-	if err != nil {
-		return "", err
-	}
-
-	req := clientset.CoreV1().Pods(pod.ObjectMeta.Namespace).GetLogs(pod.ObjectMeta.Name, &v1.PodLogOptions{})
-	podLogs, err := req.Stream(ctx)
-	if err != nil {
-		return "", err
-	}
-	defer podLogs.Close()
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
+	return pv.GetPodLog(ctx, client, pod)
 }
 
 func ComparePodLogString(ctx context.Context, client klient.Client, customPod v1.Pod, expectedPodlogString string) (string, error) {
@@ -452,23 +439,10 @@ func ProvisionPod(ctx context.Context, client klient.Client, t *testing.T, pod *
 	return nil
 }
 
-func DeletePod(ctx context.Context, client klient.Client, pod *v1.Pod, tcDelDuration *time.Duration) error {
-	duration := 1 * time.Minute
-	if tcDelDuration == nil {
-		tcDelDuration = &duration
-	}
-	if err := client.Resources().Delete(ctx, pod); err != nil {
-		return err
-	}
-	log.Infof("Deleting pod %s...", pod.Name)
-	if err := wait.For(conditions.New(
-		client.Resources()).ResourceDeleted(pod),
-		wait.WithInterval(5*time.Second),
-		wait.WithTimeout(*tcDelDuration)); err != nil {
-		return err
-	}
-	log.Infof("Pod %s has been successfully deleted within %.0fs", pod.Name, tcDelDuration.Seconds())
-	return nil
+// This code has moved to the provisioner package which e2e depends on, but I've kept this
+// indirection for now so we don't have to update lots of extra code in this PR
+func DeletePod(ctx context.Context, client klient.Client, pod *v1.Pod, deleteDuration *time.Duration) error {
+	return pv.DeletePod(ctx, client, pod, deleteDuration)
 }
 
 func CreateAndWaitForNamespace(ctx context.Context, client klient.Client, namespaceName string) error {
