@@ -48,7 +48,7 @@ You can deploy the CoCo operator and cloud-api-adaptor with the `Makefile` by ru
 * `make deploy` deploys operator, runtime and cloud-api-adaptor pod in the configured cluster
     * validate kubectl is available in your `$PATH` and `$KUBECONFIG` is set
 
-> **Note:** `make delete` deletes the cloud-api-adaptor daemonset from the configured cluster (and peerpod-ctrl if RESOURCE_CTRL=true is set)
+> **Note:** `make delete` deletes the cloud-api-adaptor daemonset from the configured cluster
 
 ### Manually
 
