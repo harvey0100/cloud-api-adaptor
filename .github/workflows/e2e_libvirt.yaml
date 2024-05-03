@@ -82,6 +82,7 @@ jobs:
       - name: Config Libvirt
         run: |
           ./libvirt/config_libvirt.sh
+          echo "CAA_IMAGE=\"${{ inputs.caa_image }}\"" >> libvirt.properties
           # For debugging
           echo "CAA_IMAGE=${{ inputs.caa_image }}" >> libvirt.properties
           cat libvirt.properties

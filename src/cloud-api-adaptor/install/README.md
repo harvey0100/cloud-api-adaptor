@@ -88,7 +88,7 @@ Alternatively the manual approach, if you want to pick a specific CoCo release/r
   ```
   kubectl get pods -n confidential-containers-system --watch
   ```
-  > **Note:** The `peerpodconfig-ctrl-caa-daemon` will we stuck in `CreateContainerConfigError` until the cloud provider overlay is applied
+  > **Note:** The `peerpodconfig-ctrl-caa-daemon` will be stuck in `CreateContainerConfigError` until the cloud provider overlay is applied
 
 - Wait until the `kata-remote` runtime class has been created by running:
   ```
