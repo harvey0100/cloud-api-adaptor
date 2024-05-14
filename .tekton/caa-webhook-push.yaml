@@ -27,6 +27,8 @@ spec:
     value: src/webhook
   - name: revision
     value: '{{revision}}'
+  - name: build-args-file
+    value: '.tekton/build-args.env'
   pipelineSpec:
     finally:
     - name: show-sbom
