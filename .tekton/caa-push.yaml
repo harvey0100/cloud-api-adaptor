@@ -113,7 +113,7 @@ spec:
       description: Build a source image.
       name: build-source-image
       type: string
-    - default: ""
+    - default: ".tekton/build-args.env"
       description: Path to a file with build arguments which will be passed to podman
         during build
       name: build-args-file
