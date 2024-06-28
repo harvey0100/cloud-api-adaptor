@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/option"
 
 	pv "github.com/confidential-containers/cloud-api-adaptor/src/cloud-api-adaptor/test/provisioner"
-	log "github.com/sirupsen/logrus"
+	// log "github.com/sirupsen/logrus"
 	"google.golang.org/api/compute/v1"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
@@ -18,9 +18,11 @@ var GCPProps = &GCPProvisioner{}
 
 // GCPProvisioner implements the CloudProvisioner interface.
 type GCPProvisioner struct {
-	GkeCluster *GKECluster
-	GcpVPC     *GCPVPC
-	PodvmImage *GCPImage
+	GkeCluster   *GKECluster
+	GcpVPC       *GCPVPC
+	PodvmImage   *GCPImage
+	CaaImageName string
+	VxlanPort    string
 }
 
 // NewGCPProvisioner creates a new GCPProvisioner with the given properties.
@@ -49,12 +51,12 @@ func NewGCPProvisioner(properties map[string]string) (pv.CloudProvisioner, error
 		return nil, err
 	}
 
-	log.Info(image.Name)
-
 	GCPProps = &GCPProvisioner{
-		GkeCluster: gkeCluster,
-		GcpVPC:     gcpVPC,
-		PodvmImage: image,
+		GkeCluster:   gkeCluster,
+		GcpVPC:       gcpVPC,
+		PodvmImage:   image,
+		CaaImageName: properties["caa_image_name"],
+		VxlanPort:    properties["vxlan_port"],
 	}
 	return GCPProps, nil
 }
@@ -97,6 +99,8 @@ func (p *GCPProvisioner) GetProperties(ctx context.Context, cfg *envconf.Config)
 		"project_id":       p.GkeCluster.projectID,
 		"zone":             p.GkeCluster.zone,
 		"network":          p.GcpVPC.vpcName,
+		"vxlan_port":       p.VxlanPort,
+		"caa_image_name":   p.CaaImageName,
 	}
 }
 
