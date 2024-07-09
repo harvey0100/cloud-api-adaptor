@@ -36,6 +36,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${RUST_VERS
 ENV PATH "/root/.cargo/bin:/usr/local/go/bin:$PATH"
 
 RUN echo $PATH
+RUN echo $GOPATH
 
 RUN rustup target add x86_64-unknown-linux-musl && ln -sf /usr/bin/g++ /bin/musl-g++
     
