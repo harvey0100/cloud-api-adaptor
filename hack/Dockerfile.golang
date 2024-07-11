@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.8-labs
+# syntax=docker/dockerfile:1.9-labs
 
 ARG BASE_IMAGE=registry.fedoraproject.org/fedora:38
 FROM --platform=$TARGETPLATFORM ${BASE_IMAGE} as base
