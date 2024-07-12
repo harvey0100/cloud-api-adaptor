@@ -31,11 +31,6 @@ ENV DEFAULT_AGENT_POLICY_FILE ${DEFAULT_AGENT_POLICY_FILE}
 ENV IMAGE_URL "none"
 ENV IMAGE_CHECKSUM "none"
 
-
-# Set verbose output for Go build
-ENV GOFLAGS=-x
-
-
 COPY . /src
 
 WORKDIR /src/cloud-api-adaptor/podvm
@@ -44,9 +39,11 @@ RUN ./hack/cross-build-extras.sh
 
 RUN echo $GOPATH
 
-# Enable verbose shell output and run make binaries
-RUN set -x && LIBC=gnu make binaries || { echo "Build failed"; exit 1; }
+# Ensure .git-commit file exists
+RUN [ ! -f .git-commit ] && echo $(git rev-parse HEAD) > .git-commit || true
 
+# Enable verbose shell output, run make binaries, and log the output
+RUN set -x && LIBC=gnu make binaries > build.log 2>&1 || { cat build.log; echo "Build failed"; exit 1; }
 
 RUN tar czvf /podvm-binaries.tar.gz -C /src/cloud-api-adaptor/podvm/files usr/ etc/
 RUN tar czvf /pause-bundle.tar.gz -C /src/cloud-api-adaptor/podvm/files pause_bundle/
