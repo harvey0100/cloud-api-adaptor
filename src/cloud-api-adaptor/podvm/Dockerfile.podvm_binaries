@@ -39,7 +39,11 @@ RUN ./hack/cross-build-extras.sh
 
 RUN echo $GOPATH
 
-RUN LIBC=gnu make binaries
+# Ensure .git-commit file exists
+RUN [ ! -f .git-commit ] && echo $(git rev-parse HEAD) > .git-commit || true
+
+# Enable verbose shell output, run make binaries, and log the output
+RUN set -x && LIBC=gnu make binaries > build.log 2>&1 || { cat build.log; echo "Build failed"; exit 1; }
 
 RUN tar czvf /podvm-binaries.tar.gz -C /src/cloud-api-adaptor/podvm/files usr/ etc/
 RUN tar czvf /pause-bundle.tar.gz -C /src/cloud-api-adaptor/podvm/files pause_bundle/
