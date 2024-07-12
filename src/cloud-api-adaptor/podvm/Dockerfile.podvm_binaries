@@ -31,8 +31,10 @@ ENV DEFAULT_AGENT_POLICY_FILE ${DEFAULT_AGENT_POLICY_FILE}
 ENV IMAGE_URL "none"
 ENV IMAGE_CHECKSUM "none"
 
-# Enable verbose output for Go build
-ENV GOFLAGS="-x"
+
+# Set verbose output for Go build
+ENV GOFLAGS=-x
+
 
 COPY . /src
 
